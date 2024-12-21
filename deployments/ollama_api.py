@@ -9,10 +9,7 @@ import modal
 import os
 import subprocess
 import time
-from fastapi import FastAPI, HTTPException
-from fastapi.responses import StreamingResponse
 from typing import List, Any, Optional, AsyncGenerator
-from pydantic import BaseModel, Field
 
 
 MODEL = os.environ.get("MODEL", "gemma2:27b")
@@ -68,43 +65,66 @@ image = (
         "usermod -a -G ollama $(whoami)",
     )
     .copy_local_file("ollama.service", "/etc/systemd/system/ollama.service")
-    .pip_install("ollama", "httpx", "loguru", "pydantic", "fastapi")
+    .pip_install("ollama", "httpx", "loguru")
     .run_function(pull)
 )
 app = modal.App(name="ollama", image=image)
-api = FastAPI()
 
 
-class ChatMessage(BaseModel):
-    """A single message in a chat completion request.
+# Move FastAPI instantiation into a function to keep import local
+def create_api():
+    """Create and configure the FastAPI application.
 
-    Represents one message in the conversation history, following OpenAI's chat format.
+    :return: Configured FastAPI application instance
     """
+    from fastapi import FastAPI
 
-    role: str = Field(
-        ..., description="The role of the message sender (e.g. 'user', 'assistant')"
-    )
-    content: str = Field(..., description="The content of the message")
+    return FastAPI()
 
 
-class ChatCompletionRequest(BaseModel):
-    """Request model for chat completions.
+api = create_api()
 
-    Follows OpenAI's chat completion request format, supporting both streaming
-    and non-streaming responses.
+
+def create_chat_models():
+    """Create Pydantic models for chat functionality.
+
+    :return: Tuple of ChatMessage and ChatCompletionRequest model classes
     """
+    from pydantic import BaseModel, Field
 
-    model: Optional[str] = Field(
-        default=MODEL, description="The model to use for completion"
-    )
-    messages: List[ChatMessage] = Field(
-        ..., description="The messages to generate a completion for"
-    )
-    stream: bool = Field(default=False, description="Whether to stream the response")
+    class ChatMessage(BaseModel):
+        """A single message in a chat completion request.
+
+        Represents one message in the conversation history, following OpenAI's chat format.
+        """
+
+        role: str = Field(
+            ..., description="The role of the message sender (e.g. 'user', 'assistant')"
+        )
+        content: str = Field(..., description="The content of the message")
+
+    class ChatCompletionRequest(BaseModel):
+        """Request model for chat completions.
+
+        Follows OpenAI's chat completion request format, supporting both streaming
+        and non-streaming responses.
+        """
+
+        model: Optional[str] = Field(
+            default=MODEL, description="The model to use for completion"
+        )
+        messages: List[ChatMessage] = Field(
+            ..., description="The messages to generate a completion for"
+        )
+        stream: bool = Field(
+            default=False, description="Whether to stream the response"
+        )
+
+    return ChatMessage, ChatCompletionRequest
 
 
 @api.post("/v1/chat/completions")
-async def v1_chat_completions(request: ChatCompletionRequest) -> Any:
+async def v1_chat_completions(request: "ChatCompletionRequest") -> Any:
     """Handle chat completion requests in OpenAI-compatible format.
 
     :param request: Chat completion parameters
@@ -113,6 +133,8 @@ async def v1_chat_completions(request: ChatCompletionRequest) -> Any:
     """
     import ollama  # Import here to ensure it's available in the Modal container
     import json
+    from fastapi import HTTPException
+    from fastapi.responses import StreamingResponse
 
     try:
         if not request.messages:
