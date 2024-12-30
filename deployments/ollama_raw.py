@@ -124,15 +124,16 @@ async def forward_request(path: str, request: Request) -> Any:
                     logger.info("Handling streaming chat request")
 
                     async def generate() -> AsyncGenerator[bytes, None]:
-                        response = await client.post(
-                            f"http://localhost:11434/{path}",
-                            json=body,
-                            timeout=None,
-                            stream=True,
-                        )
-                        async for line in response.aiter_lines():
-                            if line:  # Skip empty lines
-                                yield f"{line}\n"
+                        async with httpx.AsyncClient() as stream_client:
+                            async with stream_client.stream(
+                                "POST",
+                                f"http://localhost:11434/{path}",
+                                json=body,
+                                timeout=None,
+                            ) as response:
+                                async for line in response.aiter_lines():
+                                    if line:  # Skip empty lines
+                                        yield f"{line}\n"
 
                     return StreamingResponse(generate(), media_type="text/event-stream")
 
