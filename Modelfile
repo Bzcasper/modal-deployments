@@ -1,0 +1,25 @@
+# Modelfile for Ollama Modal Deployment (devstral:24b)
+
+FROM ollama/base:latest
+
+# Set the default model to devstral:24b
+ENV MODEL=devstral:24b
+
+# Pull the devstral:24b model at build time for faster startup
+RUN ollama pull devstral:24b
+
+# Optimize Ollama for software tooling developer agent use
+# (You can further tune these parameters as needed)
+ENV OLLAMA_NUM_CTX=8192
+ENV OLLAMA_NUM_GPU=1
+ENV OLLAMA_NUM_THREAD=8
+ENV OLLAMA_TEMPERATURE=0.2
+ENV OLLAMA_TOP_P=0.95
+ENV OLLAMA_TOP_K=40
+ENV OLLAMA_SYSTEM_PROMPT="You are a highly capable software development agent. Respond with clear, concise, and correct code. Prioritize developer productivity, code quality, and tool integration."
+
+# Expose the default Ollama port
+EXPOSE 11434
+
+# Start the Ollama server
+CMD ["ollama", "serve"]

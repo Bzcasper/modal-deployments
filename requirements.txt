@@ -1,0 +1,9 @@
+fastapi
+uvicorn
+httpx
+ipython
+loguru
+modal
+openai
+python-multipart
+requests

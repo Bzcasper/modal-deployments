@@ -1,16 +1,43 @@
 [project]
 name = "modal-deployments"
 version = "0.1.0"
-description = "Add your description here"
+description = "Modal Labs deployments for AI services"
 readme = "README.md"
 requires-python = "~=3.12"
-dependencies = [
-    "fastapi>=0.115.6",
-    "httpx>=0.28.1",
-    "ipython>=8.31.0",
-    "loguru>=0.7.3",
-    "modal>=0.68.29",
-    "openai>=1.58.1",
-    "python-multipart>=0.0.20",
-    "requests>=2.32.3",
+license = {text = "MIT"}
+authors = [
+    {name = "Your Name", email = "your.email@example.com"}
 ]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+dependencies = [
+    "fastapi>=0.115.6,<1.0.0",
+    "httpx>=0.28.1,<1.0.0",
+    "ipython>=8.31.0,<9.0.0",
+    "loguru>=0.7.3,<1.0.0",
+    "modal>=0.68.29,<1.0.0",
+    "openai>=1.58.1,<2.0.0",
+    "python-multipart>=0.0.20,<1.0.0",
+    "requests>=2.32.3,<3.0.0",
+    "uvicorn>=0.29.0,<1.0.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/yourusername/modal-deployments"
+Documentation = "https://github.com/yourusername/modal-deployments#readme"
+Issues = "https://github.com/yourusername/modal-deployments/issues"
+
+[project.scripts]
+ollama-api = "modal_deployments.deployments.ollama_api:app"
+
+[tool.poetry.group.dev.dependencies]
+black = "^24.3.0"
+mypy = "^1.9.0"
+pytest = "^8.1.1"
+pytest-asyncio = "^0.23.6"
+ruff = "^0.3.4"
+types-requests = "^2.31.0.20240311"

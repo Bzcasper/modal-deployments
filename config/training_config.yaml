@@ -1,0 +1,46 @@
+# 🎯 Training Configuration
+# This file controls how your AI model gets trained
+
+# Model settings
+model:
+  base_model: "microsoft/DialoGPT-medium"  # Starting point model
+  model_name: "my-coding-assistant"        # Your custom model name
+  max_length: 512                         # Maximum text length
+  temperature: 0.7                        # Creativity level (0.1 = focused, 1.0 = creative)
+
+# Training parameters
+training:
+  learning_rate: 2e-5        # How fast the model learns (smaller = more careful)
+  batch_size: 4              # How many examples to process at once
+  num_epochs: 3              # How many times to go through all training data
+  warmup_steps: 100          # Gradual learning rate increase
+  weight_decay: 0.01         # Prevents overfitting
+  max_grad_norm: 1.0         # Gradient clipping for stability
+
+# Data settings
+data:
+  dataset_size: 1000         # Number of training examples to use
+  validation_split: 0.1      # Percentage for testing (10%)
+  max_examples: 5000         # Maximum examples to process
+  shuffle: true              # Randomize training order
+
+# Advanced settings (for experienced users)
+advanced:
+  use_lora: true             # Use LoRA fine-tuning (memory efficient)
+  lora_rank: 16              # LoRA complexity
+  lora_alpha: 32             # LoRA scaling
+  gradient_checkpointing: true # Save memory
+  fp16: true                 # Use half precision (faster, less memory)
+
+# Monitoring
+monitoring:
+  log_steps: 10              # How often to log progress
+  eval_steps: 100            # How often to evaluate
+  save_steps: 500            # How often to save checkpoints
+  use_wandb: true            # Use Weights & Biases for monitoring
+
+# Output settings
+output:
+  output_dir: "models/checkpoints"  # Where to save training progress
+  final_model_dir: "models/final"   # Where to save final model
+  logs_dir: "logs"                  # Where to save logs
